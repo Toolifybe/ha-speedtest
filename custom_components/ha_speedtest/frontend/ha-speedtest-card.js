@@ -1,10 +1,10 @@
-/* Speedtest card v1.1.0 — meter + chart, follows the Home Assistant theme */
-const CARD_VERSION = "1.1.0";
+/* Speedtest card v1.2.0 — meter + chart, follows the Home Assistant theme */
+const CARD_VERSION = "1.2.0";
 
 const T = {
   nl: {
     title: "Speedtest", chart: "Grafiek", gauge: "Meter", run: "Nu testen", again: "Opnieuw testen",
-    busy: "Bezig…", ping: "Ping", jitter: "Jitter", download: "Download", upload: "Upload",
+    busy: "Bezig…", short: "Testen", ping: "Ping", jitter: "Jitter", download: "Download", upload: "Upload",
     idle: "Klaar", p_ping: "Ping meten", p_download: "Download meten", p_upload: "Upload meten",
     thisTest: "Deze test", days: (n) => `${n} dagen`, seconds: "s", noData: "Nog geen metingen. Druk op “Nu testen”.",
     noHist: "Nog geen metingen in deze periode.", light: "lichte test", full: "volledige test",
@@ -14,7 +14,7 @@ const T = {
   },
   en: {
     title: "Speedtest", chart: "Chart", gauge: "Gauge", run: "Run test", again: "Run again",
-    busy: "Running…", ping: "Ping", jitter: "Jitter", download: "Download", upload: "Upload",
+    busy: "Running…", short: "Test", ping: "Ping", jitter: "Jitter", download: "Download", upload: "Upload",
     idle: "Done", p_ping: "Measuring ping", p_download: "Measuring download", p_upload: "Measuring upload",
     thisTest: "This test", days: (n) => `${n} days`, seconds: "s", noData: "No results yet. Press “Run test”.",
     noHist: "No results in this period.", light: "light test", full: "full test",
@@ -45,9 +45,11 @@ class HaSpeedtestCard extends HTMLElement {
         { name: "days", selector: { number: { min: 1, max: 90, mode: "box" } } },
         { name: "max", selector: { number: { min: 10, max: 10000, step: 10, mode: "box", unit_of_measurement: "Mbit/s" } } },
         { name: "view", selector: { select: { options: [{ value: "gauge", label: "Meter / Gauge" }, { value: "chart", label: "Grafiek / Chart" }] } } },
+        { name: "compact", selector: { boolean: {} } },
       ],
       computeLabel: (s) => ({ title: "Titel / Title", days: "Dagen in de grafiek / Days in chart",
-        max: "Maximum van de meter (leeg = automatisch) / Gauge maximum (empty = auto)", view: "Begin met / Start with" }[s.name]),
+        max: "Maximum van de meter (leeg = automatisch) / Gauge maximum (empty = auto)", view: "Begin met / Start with",
+        compact: "Compact (kleine meter, waarden ernaast) / Compact (small gauge, values beside it)" }[s.name]),
     };
   }
 
@@ -72,7 +74,7 @@ class HaSpeedtestCard extends HTMLElement {
     if (this._unsub) { this._unsub.then((u) => u && u()).catch(() => {}); this._unsub = null; }
     if (this._ro) this._ro.disconnect();
   }
-  getCardSize() { return 7; }
+  getCardSize() { return this._config && this._config.compact ? 3 : 7; }
   getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
 
   get _t() { const l = (this._hass && this._hass.locale && this._hass.locale.language) || "en"; return l.startsWith("nl") ? T.nl : T.en; }
@@ -151,11 +153,35 @@ class HaSpeedtestCard extends HTMLElement {
         .go[disabled] { opacity: .65; cursor: default; box-shadow: none; }
         .foot { text-align: center; font: 12px var(--st-mono); color: var(--secondary-text-color); line-height: 1.6; }
         .msg { color: var(--secondary-text-color); padding: 16px 0; }
+        /* compact: small gauge with the values beside it, button in the header, one footer line */
+        .cmp { padding: 14px 16px 12px; }
+        .cmp .top { margin-bottom: 6px; }
+        .cmp .kicker { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .cmp .toggle { padding: 5px 9px; font-size: 11px; border-radius: 9px; }
+        .cmp .go { margin: 0; padding: 6px 14px; font-size: 13px; box-shadow: none; }
+        .cmp .go:hover:not([disabled]) { transform: none; box-shadow: none; filter: brightness(1.08); }
+        .cmp .body { display: flex; gap: 12px; align-items: center; }
+        .cmp.chartv .body { display: block; }
+        .cmp.chartv .tiles { display: none; }
+        .cmp .stage { min-height: 0; flex: 0 0 136px; }
+        .cmp .gauge { width: 136px; }
+        .cmp .g-tick { display: none; }
+        .cmp .g-val { font-size: 76px; }
+        .cmp .g-unit { font-size: 20px; }
+        .cmp .phase { font-size: 10px; letter-spacing: .12em; margin-top: -6px; min-height: 14px; }
+        .cmp .phase.err { font-size: 11px; text-align: center; }
+        .cmp .tiles { flex: 1; margin: 0; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .cmp .tile { padding: 7px 10px; border-radius: 10px; min-width: 0; }
+        .cmp .tile .lbl { font-size: 10px; letter-spacing: .1em; }
+        .cmp .tile .num { font-size: 20px; margin: 3px 0 0; display: inline-block; }
+        .cmp .tile .u { font-size: 10px; margin-left: 4px; display: inline; }
+        .cmp .plot svg { height: 140px; }
+        .cmp .chart-head { gap: 10px; font-size: 11px; }
+        .cmp .foot { margin-top: 8px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       </style>
       <ha-card>
         <div class="top"><div class="kicker"></div><button class="toggle" type="button"><ha-icon icon="mdi:swap-horizontal"></ha-icon><span></span></button></div>
-        <div class="stage"></div>
-        <div class="tiles"></div>
+        <div class="body"><div class="stage"></div><div class="tiles"></div></div>
         <button class="go" type="button"></button>
         <div class="foot"></div>
       </ha-card>`;
@@ -183,9 +209,14 @@ class HaSpeedtestCard extends HTMLElement {
     card.style.setProperty("--st-live", phase === "upload" ? c.upload : c.download);
     this._$(".kicker").textContent = this._config.title || t.title;
     this._$(".toggle span").textContent = this._view === "gauge" ? t.chart : t.gauge;
+    const compact = !!this._config.compact;
+    card.classList.toggle("cmp", compact);
+    card.classList.toggle("chartv", this._view === "chart");
     const go = this._$(".go");
+    if (compact && go.parentElement !== this._$(".top")) this._$(".top").insertBefore(go, this._$(".toggle"));
+    if (!compact && go.parentElement === this._$(".top")) this._$(".body").after(go);
     go.disabled = !d || phase !== "idle";
-    go.textContent = phase !== "idle" ? t.busy : (d && d.last ? t.again : t.run);
+    go.textContent = phase !== "idle" ? t.busy : compact ? t.short : (d && d.last ? t.again : t.run);
     this._renderStage();
     this._renderTiles();
     this._renderFoot();
@@ -306,7 +337,7 @@ class HaSpeedtestCard extends HTMLElement {
       plot.firstChild.textContent = this._range === "test" ? (d.phase !== "idle" ? t["p_" + d.phase] + "…" : t.noData) : (d.last ? t.noHist : t.noData);
       return;
     }
-    const W = Math.max(260, plot.clientWidth || st.clientWidth || 400), H = 200, L = 44, Rt = 10, Tp = 10, B = 24;
+    const W = Math.max(260, plot.clientWidth || st.clientWidth || 400), H = this._config.compact ? 140 : 200, L = 44, Rt = 10, Tp = 10, B = 24;
     const yTop = (() => { const m = Math.max(...series.flatMap((s) => s.pts.map((p) => p[1])), 1); const step = [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10].map((f) => f * Math.pow(10, Math.floor(Math.log10(m / 4)))).find((s) => s * 4 >= m); return step * 4; })();
     const X = (x) => L + ((x - xMin) / (xMax - xMin || 1)) * (W - L - Rt);
     const Y = (y) => Tp + (1 - y / yTop) * (H - Tp - B);
@@ -386,6 +417,11 @@ class HaSpeedtestCard extends HTMLElement {
       const ms = Date.now() - Date.parse(d.last.time);
       const rtf = new Intl.RelativeTimeFormat(this._lang, { numeric: "auto" });
       const rel = ms < 60e3 ? t.now : ms < 3600e3 ? rtf.format(-Math.round(ms / 60e3), "minute") : ms < 864e5 ? rtf.format(-Math.round(ms / 3600e3), "hour") : rtf.format(-Math.round(ms / 864e5), "day");
+      if (this._config.compact) {
+        parts.push(`${rel} · ${d.last.kind === "light" ? t.light : t.full}${d.last.bytes_mb ? ` · ±${d.last.bytes_mb} MB` : ""}${d.last.server ? " · " + d.last.server : ""}`);
+        f.innerHTML = "<div></div>"; f.firstChild.textContent = parts[0]; f.title = `${parts[0]}${d.last.isp ? " · " + d.last.isp : ""} · ${t.auto(d.interval)}`;
+        return;
+      }
       parts.push(`${rel} · ${d.last.kind === "light" ? t.light : t.full}${d.last.bytes_mb ? ` (±${d.last.bytes_mb} MB ${t.used})` : ""}`);
       if (d.last.server) parts.push(`${t.server} ${d.last.server}${d.last.isp ? " · " + d.last.isp : ""}`);
     }

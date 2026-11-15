@@ -1,7 +1,7 @@
 # ⚡ Speedtest for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
 
 Measure your internet speed with Cloudflare and see it at a glance: a live gauge, four tiles and a chart of the last days.
 
@@ -19,7 +19,8 @@ Measure your internet speed with Cloudflare and see it at a glance: a live gauge
 - 🧩 **Action** `ha_speedtest.run` — optionally waits and returns the result (`response_variable`)
 - 🎨 **Home Assistant look** — follows your theme, light and dark
 - 🗂️ **History kept for 90 days** — independent of the recorder
-- ⚙️ **Visual editor** — title, days in the chart, gauge maximum, start view
+- 📐 **Compact layout** — small gauge with the four values beside it, about a quarter of the height
+- ⚙️ **Visual editor** — title, days in the chart, gauge maximum, start view, compact
 
 ---
 
@@ -47,6 +48,7 @@ type: custom:ha-speedtest-card
 | `days`  | `7`         | Days shown in the chart (1–90)                         |
 | `max`   | automatic   | Maximum of the gauge in Mbit/s                         |
 | `view`  | `gauge`     | `gauge` or `chart` when the card opens                 |
+| `compact` | `false`   | Small gauge with the values beside it, button in the header, one footer line |
 
 ## 🔧 Integration options
 
@@ -106,6 +108,9 @@ custom_components/ha_speedtest/
 ---
 
 ## 📝 Changelog
+
+### v1.2.0
+- New card option `compact: true`: small gauge with the four values beside it, the test button in the header and one footer line (about 210 px high instead of 800). Also in the visual editor.
 
 ### v1.1.0
 - Much more accurate on fast lines and slow uploads: light and full tests now both measure over a fixed time (light 3–4 s, full 10 s) with 6 connections. The old light test (fixed 25 MB) read far too low on fast lines.
