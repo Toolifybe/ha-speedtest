@@ -1,7 +1,7 @@
 {
   "domain": "ha_speedtest",
-  "name": "HA Speedtest",
-  "version": "1.0.0",
+  "name": "Speedtest",
+  "version": "1.0.1",
   "codeowners": [
     "@toolifybe"
   ],

@@ -1,4 +1,4 @@
-"""HA Speedtest: internet speed (Cloudflare) with a simple card."""
+"""Speedtest: internet speed (Cloudflare) with a simple card."""
 from __future__ import annotations
 
 import logging
@@ -27,7 +27,7 @@ def _runner(hass: HomeAssistant) -> Runner:
     entries = [e for e in hass.config_entries.async_entries(DOMAIN)
                if e.state is ConfigEntryState.LOADED and getattr(e, "runtime_data", None)]
     if not entries:
-        raise HomeAssistantError("HA Speedtest is not set up")
+        raise HomeAssistantError("Speedtest is not set up")
     return entries[0].runtime_data
 
 

@@ -1,5 +1,5 @@
 {
-  "name": "HA Speedtest",
+  "name": "Speedtest",
   "description": "Internet speed test (Cloudflare) with a simple gauge and chart card",
   "render_readme": true,
   "domains": [

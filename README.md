@@ -1,7 +1,7 @@
-# ⚡ HA Speedtest for Home Assistant
+# ⚡ Speedtest for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
 
 Measure your internet speed with Cloudflare and see it at a glance: a live gauge, four tiles and a chart of the last days.
 
@@ -26,9 +26,9 @@ Measure your internet speed with Cloudflare and see it at a glance: a live gauge
 ## 📦 Installation via HACS
 
 1. HACS → ⋮ → **Custom repositories** → add `https://github.com/Toolifybe/ha-speedtest` as **Integration**
-2. Search for **HA Speedtest** and download it
+2. Search for **Speedtest** and download it
 3. Restart Home Assistant
-4. **Settings → Devices & services → Add integration → HA Speedtest**
+4. **Settings → Devices & services → Add integration → Speedtest**
 5. Choose how often to test automatically and which kind of test
 
 The card is added as a dashboard resource automatically. Add it to a dashboard:
@@ -104,6 +104,9 @@ custom_components/ha_speedtest/
 ---
 
 ## 📝 Changelog
+
+### v1.0.1
+- Name shortened to "Speedtest" (no "HA" in the title).
 
 ### v1.0.0
 - First version: Cloudflare speed test (light and full), sensors, buttons, action with response, automatic schedule, 90 days history, card with live gauge, tiles and chart (last test / last days), visual editor, English and Dutch.

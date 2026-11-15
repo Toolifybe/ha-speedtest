@@ -1,4 +1,4 @@
-"""Set up and change HA Speedtest from the UI."""
+"""Set up and change Speedtest from the UI."""
 from __future__ import annotations
 
 import voluptuous as vol

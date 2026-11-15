@@ -1,6 +1,6 @@
-"""Constants for HA Speedtest."""
+"""Constants for Speedtest."""
 DOMAIN = "ha_speedtest"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 CONF_INTERVAL = "interval"      # hours between automatic tests, "0" = only on request
 CONF_KIND = "kind"              # kind of the automatic test: "light" or "full"

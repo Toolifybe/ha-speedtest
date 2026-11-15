@@ -1,5 +1,5 @@
-/* HA Speedtest card v1.0.0 — meter + chart, follows the Home Assistant theme */
-const CARD_VERSION = "1.0.0";
+/* Speedtest card v1.0.1 — meter + chart, follows the Home Assistant theme */
+const CARD_VERSION = "1.0.1";
 
 const T = {
   nl: {
@@ -9,7 +9,7 @@ const T = {
     thisTest: "Deze test", days: (n) => `${n} dagen`, seconds: "s", noData: "Nog geen metingen. Druk op “Nu testen”.",
     noHist: "Nog geen metingen in deze periode.", light: "lichte test", full: "volledige test",
     server: "Cloudflare-server", ago: "geleden", now: "zonet", auto: (h) => h ? `automatisch om de ${h} u` : "alleen op vraag",
-    notLoaded: "De integratie HA Speedtest is niet ingesteld (Instellingen → Apparaten & diensten).",
+    notLoaded: "De integratie Speedtest is niet ingesteld (Instellingen → Apparaten & diensten).",
     failed: "Test mislukt", used: "gebruikt",
   },
   en: {
@@ -19,7 +19,7 @@ const T = {
     thisTest: "This test", days: (n) => `${n} days`, seconds: "s", noData: "No results yet. Press “Run test”.",
     noHist: "No results in this period.", light: "light test", full: "full test",
     server: "Cloudflare server", ago: "ago", now: "just now", auto: (h) => h ? `automatic every ${h} h` : "on request only",
-    notLoaded: "The HA Speedtest integration is not set up (Settings → Devices & services).",
+    notLoaded: "The Speedtest integration is not set up (Settings → Devices & services).",
     failed: "Test failed", used: "used",
   },
 };
