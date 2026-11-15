@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Speedtest",
+        "description": "Mesure la vitesse de ta connexion internet via Cloudflare (speed.cloudflare.com).",
+        "data": {
+          "interval": "Test automatique",
+          "kind": "Type de test automatique"
+        },
+        "data_description": {
+          "interval": "Le bouton de la carte lance toujours un test complet, quand tu veux.",
+          "kind": "Un test de vitesse doit remplir la ligne un instant ; les données sont jetées aussitôt."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Speedtest est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Speedtest",
+        "data": {
+          "interval": "Test automatique",
+          "kind": "Type de test automatique"
+        },
+        "data_description": {
+          "interval": "Le bouton de la carte lance toujours un test complet, quand tu veux.",
+          "kind": "Un test de vitesse doit remplir la ligne un instant ; les données sont jetées aussitôt."
+        }
+      }
+    }
+  },
+  "selector": {
+    "interval": {
+      "options": {
+        "0": "Seulement sur demande",
+        "1": "Toutes les heures",
+        "3": "Toutes les 3 heures",
+        "6": "Toutes les 6 heures",
+        "12": "Toutes les 12 heures",
+        "24": "1× par jour"
+      }
+    },
+    "kind": {
+      "options": {
+        "light": "Léger – 3 à 4 s par sens, environ un tiers des données d'un test complet",
+        "full": "Complet – 10 s par sens, la vraie vitesse maximale (des centaines de Mo)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "download": {
+        "name": "Réception"
+      },
+      "upload": {
+        "name": "Envoi"
+      },
+      "ping": {
+        "name": "Ping"
+      },
+      "jitter": {
+        "name": "Gigue"
+      },
+      "last_test": {
+        "name": "Dernier test"
+      },
+      "status": {
+        "name": "Statut",
+        "state": {
+          "idle": "Prêt",
+          "ping": "Mesure du ping",
+          "download": "Mesure de la réception",
+          "upload": "Mesure de l'envoi"
+        }
+      }
+    },
+    "button": {
+      "run_full": {
+        "name": "Tester maintenant"
+      },
+      "run_light": {
+        "name": "Test léger"
+      }
+    }
+  },
+  "services": {
+    "run": {
+      "name": "Lancer un test de vitesse",
+      "description": "Lance un test de vitesse. Si une réponse est demandée, l'action attend le résultat.",
+      "fields": {
+        "kind": {
+          "name": "Type",
+          "description": "light ou full (full par défaut)"
+        }
+      }
+    }
+  }
+}

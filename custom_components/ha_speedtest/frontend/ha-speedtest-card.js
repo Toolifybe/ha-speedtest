@@ -1,5 +1,5 @@
-/* Speedtest card v1.2.0 — meter + chart, follows the Home Assistant theme */
-const CARD_VERSION = "1.2.0";
+/* Speedtest card v1.3.0 — meter + chart, follows the Home Assistant theme */
+const CARD_VERSION = "1.3.0";
 
 const T = {
   nl: {
@@ -11,6 +11,16 @@ const T = {
     server: "Cloudflare-server", ago: "geleden", now: "zonet", auto: (h) => h ? `automatisch om de ${h} u` : "alleen op vraag",
     notLoaded: "De integratie Speedtest is niet ingesteld (Instellingen → Apparaten & diensten).",
     failed: "Test mislukt", used: "gebruikt",
+  },
+  fr: {
+    title: "Speedtest", chart: "Graphique", gauge: "Jauge", run: "Tester", again: "Tester à nouveau",
+    busy: "En cours…", short: "Tester", ping: "Ping", jitter: "Gigue", download: "Réception", upload: "Envoi",
+    idle: "Terminé", p_ping: "Mesure du ping", p_download: "Mesure réception", p_upload: "Mesure envoi",
+    thisTest: "Ce test", days: (n) => `${n} jours`, seconds: "s", noData: "Pas encore de mesures. Appuie sur « Tester ».",
+    noHist: "Pas de mesures sur cette période.", light: "test léger", full: "test complet",
+    server: "Serveur Cloudflare", ago: "", now: "à l'instant", auto: (h) => h ? `automatique toutes les ${h} h` : "seulement sur demande",
+    notLoaded: "L'intégration Speedtest n'est pas configurée (Paramètres → Appareils et services).",
+    failed: "Échec du test", used: "utilisés",
   },
   en: {
     title: "Speedtest", chart: "Chart", gauge: "Gauge", run: "Run test", again: "Run again",
@@ -47,7 +57,7 @@ class HaSpeedtestCard extends HTMLElement {
         { name: "view", selector: { select: { options: [{ value: "gauge", label: "Meter / Gauge" }, { value: "chart", label: "Grafiek / Chart" }] } } },
         { name: "compact", selector: { boolean: {} } },
       ],
-      computeLabel: (s) => ({ title: "Titel / Title", days: "Dagen in de grafiek / Days in chart",
+      computeLabel: (s) => ({ title: "Titel / Titre / Title", days: "Dagen in de grafiek / Days in chart",
         max: "Maximum van de meter (leeg = automatisch) / Gauge maximum (empty = auto)", view: "Begin met / Start with",
         compact: "Compact (kleine meter, waarden ernaast) / Compact (small gauge, values beside it)" }[s.name]),
     };
@@ -77,7 +87,7 @@ class HaSpeedtestCard extends HTMLElement {
   getCardSize() { return this._config && this._config.compact ? 3 : 7; }
   getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
 
-  get _t() { const l = (this._hass && this._hass.locale && this._hass.locale.language) || "en"; return l.startsWith("nl") ? T.nl : T.en; }
+  get _t() { const l = (this._hass && this._hass.locale && this._hass.locale.language) || "en"; return T[l.slice(0, 2)] || T.en; }
   get _c() { return COLORS[this._dark ? "dark" : "light"]; }
   get _lang() { return (this._hass && this._hass.locale && this._hass.locale.language) || "en"; }
 

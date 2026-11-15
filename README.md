@@ -1,7 +1,7 @@
 # ⚡ Speedtest for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)
 
 Measure your internet speed with Cloudflare and see it at a glance: a live gauge, four tiles and a chart of the last days.
 
@@ -18,6 +18,7 @@ Measure your internet speed with Cloudflare and see it at a glance: a live gauge
 - 📊 **Sensors** — Download, Upload (Mbit/s), Ping, Jitter (ms), Last test and Status, with long-term statistics
 - 🧩 **Action** `ha_speedtest.run` — optionally waits and returns the result (`response_variable`)
 - 🎨 **Home Assistant look** — follows your theme, light and dark
+- 🌍 **English, Dutch and French** — follows the language of Home Assistant (other languages: English)
 - 🗂️ **History kept for 90 days** — independent of the recorder
 - 📐 **Compact layout** — small gauge with the four values beside it, about a quarter of the height
 - ⚙️ **Visual editor** — title, days in the chart, gauge maximum, start view, compact
@@ -101,13 +102,16 @@ custom_components/ha_speedtest/
 ├── runner.py            runs tests, schedule, history (.storage/ha_speedtest)
 ├── speedtest.py         the Cloudflare measurement
 ├── sensor.py / button.py
-├── services.yaml, strings.json, translations/ (en, nl)
+├── services.yaml, strings.json, translations/ (en, nl, fr)
 └── frontend/ha-speedtest-card.js
 ```
 
 ---
 
 ## 📝 Changelog
+
+### v1.3.0
+- French: integration (setup, options, entities, action) and card. The card picks the language of Home Assistant; other languages get English.
 
 ### v1.2.0
 - New card option `compact: true`: small gauge with the four values beside it, the test button in the header and one footer line (about 210 px high instead of 800). Also in the visual editor.
