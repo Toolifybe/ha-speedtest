@@ -1,5 +1,5 @@
-/* Speedtest card v1.3.0 — meter + chart, follows the Home Assistant theme */
-const CARD_VERSION = "1.3.0";
+/* Speedtest card v1.3.1 — meter + chart, follows the Home Assistant theme */
+const CARD_VERSION = "1.3.1";
 
 const T = {
   nl: {

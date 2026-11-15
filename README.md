@@ -1,7 +1,7 @@
 # ⚡ Speedtest for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)
 
 Measure your internet speed with Cloudflare and see it at a glance: a live gauge, four tiles and a chart of the last days.
 
@@ -103,12 +103,16 @@ custom_components/ha_speedtest/
 ├── speedtest.py         the Cloudflare measurement
 ├── sensor.py / button.py
 ├── services.yaml, strings.json, translations/ (en, nl, fr)
+├── brand/               icon (light and dark), Home Assistant 2026.3+
 └── frontend/ha-speedtest-card.js
 ```
 
 ---
 
 ## 📝 Changelog
+
+### v1.3.1
+- Own icon (light and dark) in `brand/`, shown in Settings → Devices & services from Home Assistant 2026.3.
 
 ### v1.3.0
 - French: integration (setup, options, entities, action) and card. The card picks the language of Home Assistant; other languages get English.
