@@ -1,7 +1,7 @@
 # ⚡ Speedtest for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 
 Measure your internet speed with Cloudflare and see it at a glance: a live gauge, four tiles and a chart of the last days.
 
@@ -12,7 +12,7 @@ Measure your internet speed with Cloudflare and see it at a glance: a live gauge
 - 🚀 **Cloudflare speed test** — download, upload, ping and jitter via speed.cloudflare.com, no extra packages or programs
 - 🎯 **Live gauge** — follows the test as it runs (ping → download → upload)
 - 📈 **Chart** — the speed curve of the last test, or every result of the last days (hover for details)
-- 🪶 **Light or full test** — light uses ±35 MB and is enough to see whether everything is normal; full fills the line for 10 s each way to find the real top speed
+- 🪶 **Light or full test** — light measures 3–4 s each way (about a third of the data), full fills the line for 10 s each way like speedtest.net
 - ⏱️ **Automatic tests** — every 1, 3, 6, 12 or 24 hours, or only on request
 - 🔘 **Run test button** — on the card, and as button entities for automations
 - 📊 **Sensors** — Download, Upload (Mbit/s), Ping, Jitter (ms), Last test and Status, with long-term statistics
@@ -53,7 +53,7 @@ type: custom:ha-speedtest-card
 | Option              | Choices                                       |
 |---------------------|-----------------------------------------------|
 | Automatic test      | Only on request, every 1 / 3 / 6 / 12 hours, once a day |
-| Kind of automatic test | Light (±35 MB) or Full (10 s each way)     |
+| Kind of automatic test | Light (3–4 s each way) or Full (10 s each way) |
 
 The button on the card always runs a **full** test.
 
@@ -82,7 +82,9 @@ response_variable: result   # optional: wait for the result
 
 ## ❓ Why does a speed test use so much data?
 
-A ping only measures reaction time. To measure speed, the line has to be filled for a moment: the test downloads and uploads filler data (zeros) that is counted and thrown away right away — nothing is stored. At 500 Mbit/s, 10 seconds is about 600 MB. That is why automatic tests are **light** by default.
+A ping only measures reaction time. To measure speed, the line has to be filled for a moment: the test downloads and uploads filler data (zeros) that is counted and thrown away right away — nothing is stored. At 500 Mbit/s, 10 seconds is about 600 MB; a light test uses about a third of that. That is why automatic tests are **light** by default.
+
+How it measures: 6 connections per direction, over a fixed time. A single upload connection to Cloudflare often gets only a fraction of the line, and every request has a short delay at Cloudflare, so small fixed amounts of data read far too low on fast lines. Upload requests start small and grow while they are quick; requests that hang at Cloudflare are dropped at the end and do not count. Cloudflare results are often somewhat lower than speedtest.net, depending on the server.
 
 The test runs from the machine Home Assistant runs on. On a slow machine, very fast lines (close to 1 Gbit/s) can read a bit low.
 
@@ -104,6 +106,11 @@ custom_components/ha_speedtest/
 ---
 
 ## 📝 Changelog
+
+### v1.1.0
+- Much more accurate on fast lines and slow uploads: light and full tests now both measure over a fixed time (light 3–4 s, full 10 s) with 6 connections. The old light test (fixed 25 MB) read far too low on fast lines.
+- Upload: small requests that grow while quick, a hard stop at the end, and requests hanging at Cloudflare no longer drag the result down (one hanging request could turn 8 Mbit/s into 2).
+- Data used is now counted for real.
 
 ### v1.0.1
 - Name shortened to "Speedtest" (no "HA" in the title).

@@ -46,7 +46,7 @@
     },
     "kind": {
       "options": {
-        "light": "Licht – ±35 MB, goed om te zien of alles normaal werkt",
+        "light": "Licht – 3 à 4 s per richting, ongeveer een derde van de data van een volledige test",
         "full": "Volledig – 10 s per richting, de echte maximumsnelheid (honderden MB)"
       }
     }

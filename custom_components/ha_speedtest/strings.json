@@ -46,7 +46,7 @@
     },
     "kind": {
       "options": {
-        "light": "Light – ±35 MB, enough to see whether all is normal",
+        "light": "Light – 3 to 4 s each way, about a third of the data of a full test",
         "full": "Full – 10 s each way, the real top speed (hundreds of MB)"
       }
     }

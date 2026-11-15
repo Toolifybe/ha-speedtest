@@ -6,11 +6,15 @@ How it works:
 - download / upload: a few parallel connections move filler data (zeros) that is
   counted and thrown away right away. Nothing is written to disk.
 
-Two kinds of test:
-- "light": a fixed, small amount of data (25 MB down, 10 MB up). Cheap, good to see
-  whether the line behaves as usual. On very fast lines it reads somewhat low, because
-  the test is over before the connections reach full speed.
-- "full": 10 seconds per direction, as much as the line can carry (like speedtest.net).
+Two kinds of test, both measured over a fixed time with 6 connections:
+- "light": 3 s download, 4 s upload. About a third of the data of a full test.
+- "full": 10 s per direction, as much as the line can carry (like speedtest.net).
+
+Why on time and not on a fixed amount of data: Cloudflare needs 0.1-0.4 s per request
+before data flows, and one upload connection only gets a fraction of the line. Small
+fixed amounts therefore read far too low on fast lines. Upload requests start small
+(256 kB) and grow while they are quick; at the end of the time the test stops hard,
+requests that hang at Cloudflare are dropped and do not count.
 """
 from __future__ import annotations
 
@@ -26,13 +30,12 @@ BASE = "https://speed.cloudflare.com"
 HEADERS = {"User-Agent": "ha-speedtest (Home Assistant integration)", "Referer": BASE + "/"}
 
 PROFILES = {
-    "light": {"streams": 4, "down_total": 25_000_000, "up_total": 10_000_000, "seconds": None, "warmup": 0.0},
-    # light: the first 25 % of the data is the connections starting up and is not counted
-    "full": {"streams": 6, "down_total": None, "up_total": None, "seconds": 10.0, "warmup": 1.0},
+    "light": {"streams": 6, "down_seconds": 3.0, "up_seconds": 4.0, "warmup": 0.75},
+    "full": {"streams": 6, "down_seconds": 10.0, "up_seconds": 10.0, "warmup": 1.0},
 }
-DOWN_CHUNK = 25_000_000          # bytes per download request (read as a stream, can stop early)
-UP_START, UP_MAX = 1_000_000, 8_000_000   # upload requests grow while they are fast
-SAFETY = 30.0                    # never run a direction longer than this
+DOWN_CHUNK = 25_000_000          # bytes per download request (read as a stream, stopped at the end)
+UP_START, UP_MIN, UP_MAX = 256_000, 128_000, 8_000_000   # upload request size adapts per connection
+GRACE = 3.0                      # wait this long after the end for running uploads, then drop them
 PINGS = 20
 _DUR = re.compile(r"dur=([0-9.]+)")
 
@@ -76,12 +79,10 @@ class _Counter:
         dt = now - old[0]
         return (self.bytes - old[1]) * 8 / dt / 1e6 if dt > 0.05 else 0.0
 
-    def result(self, warmup: float) -> float:
-        end = time.monotonic()
+    def result(self, warmup: float, end: float) -> float:
+        """Mbit/s from the end of the warm-up until end."""
         start_t, start_b = self.t0, 0
-        if not warmup and len(self.samples) > 4:   # amount-based test: skip the start-up quarter
-            start_t, start_b = next(((t, b) for t, b in self.samples if b >= self.bytes * 0.25), (self.t0, 0))
-        elif warmup and end - self.t0 > warmup * 3:
+        if warmup and end - self.t0 > warmup * 3:
             start_t, start_b = next(((t, b) for t, b in self.samples if t - self.t0 >= warmup), (self.t0, 0))
         dt = end - start_t
         return (self.bytes - start_b) * 8 / dt / 1e6 if dt > 0 else 0.0
@@ -119,58 +120,66 @@ async def _ping(session: aiohttp.ClientSession) -> tuple[float, float]:
     return statistics.median(times), jitter
 
 
-async def _direction(session, upload: bool, prof: dict, report) -> tuple[float, list]:
+async def _direction(session, upload: bool, prof: dict, report) -> tuple[float, list, int]:
+    """Returns (Mbit/s, curve, bytes moved)."""
     counter = _Counter(report)
-    total = prof["up_total" if upload else "down_total"]
-    deadline = counter.t0 + (prof["seconds"] or SAFETY)
-    left = [total]
-
-    def take(want: int) -> int:
-        if total is None:
-            return want
-        n = min(want, left[0])
-        left[0] -= n
-        return n
-
+    secs = prof["up_seconds" if upload else "down_seconds"]
+    deadline = counter.t0 + secs
     errors: list[Exception] = []
+    last_done = [counter.t0]
+    sent = [0]
 
-    async def down_once(n):
-        async with session.get(f"{BASE}/__down?bytes={n}", headers=HEADERS,
-                               timeout=aiohttp.ClientTimeout(total=SAFETY + 10, sock_read=15)) as r:
+    async def down_once():
+        async with session.get(f"{BASE}/__down?bytes={DOWN_CHUNK}", headers=HEADERS,
+                               timeout=aiohttp.ClientTimeout(total=secs + 15, sock_read=10)) as r:
             r.raise_for_status()
             async for chunk in r.content.iter_chunked(65536):
-                counter.add(len(chunk))
                 if time.monotonic() >= deadline:
                     return  # leaving the block closes the connection
+                counter.add(len(chunk))
 
     async def up_once(n):
+        sent[0] += n
         async with session.post(BASE + "/__up", data=bytes(n), headers=HEADERS,
-                                timeout=aiohttp.ClientTimeout(total=SAFETY + 10)) as r:
+                                timeout=aiohttp.ClientTimeout(total=secs + 15)) as r:
             r.raise_for_status()
             await r.read()
-        counter.add(n)  # counted when Cloudflare confirms it
+        if time.monotonic() <= deadline + GRACE:
+            counter.add(n)  # counted when Cloudflare confirms it
+            last_done[0] = time.monotonic()
 
     async def worker():
-        size = UP_START if upload else DOWN_CHUNK
-        if total is not None and not upload:
-            size = max(total // prof["streams"], 1)
-        while time.monotonic() < deadline and len(errors) < 6:
-            n = take(size)
-            if n <= 0:
-                return
+        size = UP_START
+        while time.monotonic() < deadline and len(errors) < 12:
             t = time.monotonic()
             try:
-                await (up_once if upload else down_once)(n)
+                await (up_once(size) if upload else down_once())
             except (aiohttp.ClientError, asyncio.TimeoutError) as err:
                 errors.append(err)  # one failed request (Cloudflare sometimes answers 502): go on
                 continue
-            if upload and time.monotonic() - t < 1.0:
-                size = min(size * 2, UP_MAX)
+            if upload:
+                took = time.monotonic() - t
+                if took < 1.0:
+                    size = min(size * 2, UP_MAX)
+                elif took > 3.0:
+                    size = max(size // 2, UP_MIN)
 
-    await asyncio.gather(*(worker() for _ in range(prof["streams"])))
-    if not counter.bytes and errors:
-        raise errors[0]
-    return counter.result(prof["warmup"]), counter.curve
+    tasks = [asyncio.ensure_future(worker()) for _ in range(prof["streams"])]
+    done, pending = await asyncio.wait(tasks, timeout=secs + GRACE)
+    for task in pending:      # requests hanging at Cloudflare: drop them
+        task.cancel()
+    await asyncio.gather(*pending, return_exceptions=True)
+    for task in done:
+        if task.exception():
+            raise task.exception()
+    if not counter.bytes:
+        raise errors[0] if errors else asyncio.TimeoutError()
+    if upload:
+        # up to the last confirmed request: time spent on dropped requests does not count
+        dt = last_done[0] - counter.t0
+        speed = counter.bytes * 8 / dt / 1e6 if dt > 0 else 0.0
+        return speed, counter.curve, sent[0]
+    return counter.result(prof["warmup"], min(time.monotonic(), deadline)), counter.curve, counter.bytes
 
 
 async def run_test(session: aiohttp.ClientSession, kind: str = "light",
@@ -191,14 +200,13 @@ async def run_test(session: aiohttp.ClientSession, kind: str = "light",
         step("ping")
         meta = await _meta(session)
         ping, jitter = await _ping(session)
-        down, down_curve = await _direction(session, False, prof, step("download"))
-        up, up_curve = await _direction(session, True, prof, step("upload"))
+        down, down_curve, down_bytes = await _direction(session, False, prof, step("download"))
+        up, up_curve, up_bytes = await _direction(session, True, prof, step("upload"))
     except aiohttp.ClientResponseError as err:
         raise SpeedtestError(f"Cloudflare answered {err.status}") from None
     except (aiohttp.ClientError, asyncio.TimeoutError) as err:
         raise SpeedtestError(f"no connection with speed.cloudflare.com ({type(err).__name__})") from None
-    secs = prof["seconds"]
-    used = (prof["down_total"] or down * secs / 8 * 1e6) + (prof["up_total"] or up * secs / 8 * 1e6)
+    used = down_bytes + up_bytes
     return {"download": round(down, 1), "upload": round(up, 1), "ping": round(ping, 1),
             "jitter": round(jitter, 1), "kind": kind, **meta, "bytes_mb": round(used / 1e6),
             "curve": {"download": down_curve, "upload": up_curve}}
