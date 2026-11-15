@@ -1,0 +1,10 @@
+{
+  "name": "HA Speedtest",
+  "description": "Internet speed test (Cloudflare) with a simple gauge and chart card",
+  "render_readme": true,
+  "domains": [
+    "ha_speedtest"
+  ],
+  "homeassistant": "2024.11.0",
+  "content_in_root": false
+}

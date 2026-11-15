@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Speedtest",
+        "description": "Meet de snelheid van je internet via Cloudflare (speed.cloudflare.com).",
+        "data": {
+          "interval": "Automatisch testen",
+          "kind": "Soort automatische test"
+        },
+        "data_description": {
+          "interval": "Met de knop op de kaart test je altijd volledig, wanneer je wilt.",
+          "kind": "Een snelheidstest moet de lijn even vol benutten; de data wordt meteen weggegooid."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Speedtest is al ingesteld."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Speedtest",
+        "data": {
+          "interval": "Automatisch testen",
+          "kind": "Soort automatische test"
+        },
+        "data_description": {
+          "interval": "Met de knop op de kaart test je altijd volledig, wanneer je wilt.",
+          "kind": "Een snelheidstest moet de lijn even vol benutten; de data wordt meteen weggegooid."
+        }
+      }
+    }
+  },
+  "selector": {
+    "interval": {
+      "options": {
+        "0": "Alleen als ik het vraag",
+        "1": "Elk uur",
+        "3": "Om de 3 uur",
+        "6": "Om de 6 uur",
+        "12": "Om de 12 uur",
+        "24": "1× per dag"
+      }
+    },
+    "kind": {
+      "options": {
+        "light": "Licht – ±35 MB, goed om te zien of alles normaal werkt",
+        "full": "Volledig – 10 s per richting, de echte maximumsnelheid (honderden MB)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "download": {
+        "name": "Download"
+      },
+      "upload": {
+        "name": "Upload"
+      },
+      "ping": {
+        "name": "Ping"
+      },
+      "jitter": {
+        "name": "Jitter"
+      },
+      "last_test": {
+        "name": "Laatste test"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "idle": "Klaar",
+          "ping": "Ping meten",
+          "download": "Download meten",
+          "upload": "Upload meten"
+        }
+      }
+    },
+    "button": {
+      "run_full": {
+        "name": "Nu testen"
+      },
+      "run_light": {
+        "name": "Lichte test"
+      }
+    }
+  },
+  "services": {
+    "run": {
+      "name": "Snelheidstest starten",
+      "description": "Start een snelheidstest. Met een antwoord (response) wacht de actie op het resultaat.",
+      "fields": {
+        "kind": {
+          "name": "Soort",
+          "description": "light of full (standaard full)"
+        }
+      }
+    }
+  }
+}

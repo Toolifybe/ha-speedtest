@@ -1,0 +1,9 @@
+run:
+  fields:
+    kind:
+      example: full
+      selector:
+        select:
+          options:
+            - light
+            - full

@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Speedtest",
+        "description": "Measures your internet speed via Cloudflare (speed.cloudflare.com).",
+        "data": {
+          "interval": "Automatic test",
+          "kind": "Kind of automatic test"
+        },
+        "data_description": {
+          "interval": "The button on the card always runs a full test, whenever you like.",
+          "kind": "A speed test has to fill the line for a moment; the data is thrown away right away."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Speedtest is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Speedtest",
+        "data": {
+          "interval": "Automatic test",
+          "kind": "Kind of automatic test"
+        },
+        "data_description": {
+          "interval": "The button on the card always runs a full test, whenever you like.",
+          "kind": "A speed test has to fill the line for a moment; the data is thrown away right away."
+        }
+      }
+    }
+  },
+  "selector": {
+    "interval": {
+      "options": {
+        "0": "Only on request",
+        "1": "Every hour",
+        "3": "Every 3 hours",
+        "6": "Every 6 hours",
+        "12": "Every 12 hours",
+        "24": "Once a day"
+      }
+    },
+    "kind": {
+      "options": {
+        "light": "Light – ±35 MB, enough to see whether all is normal",
+        "full": "Full – 10 s each way, the real top speed (hundreds of MB)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "download": {
+        "name": "Download"
+      },
+      "upload": {
+        "name": "Upload"
+      },
+      "ping": {
+        "name": "Ping"
+      },
+      "jitter": {
+        "name": "Jitter"
+      },
+      "last_test": {
+        "name": "Last test"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "idle": "Idle",
+          "ping": "Measuring ping",
+          "download": "Measuring download",
+          "upload": "Measuring upload"
+        }
+      }
+    },
+    "button": {
+      "run_full": {
+        "name": "Run test"
+      },
+      "run_light": {
+        "name": "Light test"
+      }
+    }
+  },
+  "services": {
+    "run": {
+      "name": "Run speed test",
+      "description": "Starts a speed test. When a response is asked, the action waits for the result.",
+      "fields": {
+        "kind": {
+          "name": "Kind",
+          "description": "light or full (default full)"
+        }
+      }
+    }
+  }
+}
